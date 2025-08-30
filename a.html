@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAD Institue </title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom styles that can't be done with Tailwind */
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .sidebar {
+            transition: all 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                position: fixed;
+                z-index: 50;
+                height: 100vh;
+            }
+            
+            .sidebar.open {
+                transform: translateX(0);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+    <!-- Login Screen (shown by default) -->
+    <div id="loginScreen" class="min-h-screen flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-lg p-8 w-full max-w-md fade-in">
+            <div class="text-center mb-8">
+                <i class="fas fa-chalkboard-teacher text-5xl text-blue-600 mb-4"></i>
+                <h1 class="text-3xl font-bold text-gray-800">MAD Institue </h1>
+                <p class="text-gray-600 mt-2">---</p>
+            </div>
+            
+            <form id="loginForm" class="space-y-6">
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input type="email" id="email" required 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                </div>
+                
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input type="password" id="password" required 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                </div>
+                
+                <button type="submit" 
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition duration-300 flex items-center justify-center">
+                    <i class="fas fa-sign-in-alt mr-2"></i> Login
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Main App (hidden by default) -->
+    <div id="appContainer" class="hidden">
+        <!-- Mobile Header -->
+        <div class="bg-blue-600 text-white p-4 flex items-center justify-between md:hidden">
+            <button id="menuButton" class="text-white focus:outline-none">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
+            <h1 class="text-xl font-bold">Attendance System</h1>
+            <div class="w-6"></div> <!-- Spacer for balance -->
+        </div>
+        
+        <div class="flex">
+            <!-- Sidebar -->
+            <div id="sidebar" class="sidebar bg-white w-64 min-h-screen border-r border-gray-200 p-4 md:block">
+                <div class="flex items-center space-x-3 p-2 mb-8">
+                    <i class="fas fa-chalkboard-teacher text-2xl text-blue-600"></i>
+                    <h2 class="text-xl font-semibold">Teacher Portal</h2>
+                </div>
+                
+                <nav class="space-y-1">
+                    <a href="#" class="flex items-center space-x-3 p-3 rounded-lg bg-blue-50 text-blue-600 font-medium">
+                        <i class="fas fa-clipboard-check w-5"></i>
+                        <span>Mark Attendance</span>
+                    </a>
+                    <a href="#" id="recordsTab" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 text-gray-700">
+                        <i class="fas fa-calendar-alt w-5"></i>
+                        <span>Attendance Records</span>
+                    </a>
+                    <a href="#" id="manageStudentsTab" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 text-gray-700">
+                        <i class="fas fa-users w-5"></i>
+                        <span>Manage Students</span>
+                    </a>
+                    <a href="#" id="settingsTab" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 text-gray-700">
+                        <i class="fas fa-cog w-5"></i>
+                        <span>Settings</span>
+                    </a>
+                </nav>
+                
+                <div class="mt-auto pt-4 border-t border-gray-200">
+                    <button id="logoutButton" class="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 text-gray-700 w-full">
+                        <i class="fas fa-sign-out-alt w-5"></i>
+                        <span>Logout</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="flex-1 p-6">
+                <div class="max-w-4xl mx-auto">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+                        <h2 class="text-2xl font-bold text-gray-800 mb-2 md:mb-0">Mark Attendance</h2>
+                        <div class="flex space-x-2">
+                            <div class="relative">
+                                <input type="date" id="attendanceDate" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <button id="saveAttendance" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition flex items-center">
+                                <i class="fas fa-save mr-2"></i> Save
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student ID</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentList" class="bg-white divide-y divide-gray-200">
+                                    <!-- Student rows will be added here by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-6 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <h3 class="text-lg font-medium text-gray-800 mb-4">Today's Summary</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm text-green-600">Present</p>
+                                        <p id="presentCount" class="text-2xl font-bold text-green-800">0</p>
+                                    </div>
+                                    <i class="fas fa-check-circle text-3xl text-green-400"></i>
+                                </div>
+                            </div>
+                            <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-100">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm text-yellow-600">Absent</p>
+                                        <p id="absentCount" class="text-2xl font-bold text-yellow-800">0</p>
+                                    </div>
+                                    <i class="fas fa-times-circle text-3xl text-yellow-400"></i>
+                                </div>
+                            </div>
+                            <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm text-blue-600">Late</p>
+                                        <p id="lateCount" class="text-2xl font-bold text-blue-800">0</p>
+                                    </div>
+                                    <i class="fas fa-clock text-3xl text-blue-400"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Manage Students Modal (hidden by default) -->
+    <div id="manageStudentsModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-4xl max-h-[80vh] overflow-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800">Manage Students</h3>
+                <button id="closeManageStudentsModal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="mb-6">
+                <button id="addStudentButton" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition flex items-center">
+                    <i class="fas fa-plus mr-2"></i> Add New Student
+                </button>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student ID</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentsTableBody">
+                        <!-- Students will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Student Modal (hidden by default) -->
+    <div id="studentFormModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800" id="studentFormTitle">Add New Student</h3>
+                <button id="closeStudentFormModal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="studentForm" class="space-y-4">
+                <input type="hidden" id="studentId">
+                <div>
+                    <label for="studentStudentId" class="block text-sm font-medium text-gray-700 mb-1">Student ID</label>
+                    <input type="text" id="studentStudentId" required 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                </div>
+                
+                <div>
+                    <label for="studentName" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                    <input type="text" id="studentName" required 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                </div>
+                
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" id="cancelStudentForm" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
+                        Cancel
+                    </button>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">
+                        Save Student
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Settings Modal (hidden by default) -->
+    <div id="settingsModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-2xl max-h-[80vh] overflow-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-800">Settings</h3>
+                <button id="closeSettingsModal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-6">
+                <!-- Profile Information -->
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="text-lg font-medium text-gray-800 mb-3">Profile Information</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                            <p id="teacherName" class="text-gray-900">John Smith</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <p id="teacherEmail" class="text-gray-900">teacher@school.com</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Change Password -->
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="text-lg font-medium text-gray-800 mb-3">Change Password</h4>
+                    <form id="passwordForm" class="space-y-4">
+                        <div>
+                            <label for="currentPassword" class="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+                            <input type="password" id="currentPassword" required 
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                        </div>
+                        <div>
+                            <label for="newPassword" class="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                            <input type="password" id="newPassword" required minlength="6"
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                        </div>
+                        <div>
+                            <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                            <input type="password" id="confirmPassword" required minlength="6"
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                        </div>
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">
+                            Update Password
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Class Settings -->
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="text-lg font-medium text-gray-800 mb-3">Class Information</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="className" class="block text-sm font-medium text-gray-700 mb-1">Class Name</label>
+                            <input type="text" id="className" 
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition">
+                        </div>
+                        <div>
+                            <label for="classCode" class="block text-sm font-medium text-gray-700 mb-1">Class Code</label>
+                            <input type="text" id="classCode" readonly
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notification Preferences -->
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="text-lg font-medium text-gray-800 mb-3">Notification Preferences</h4>
+                    <div class="space-y-2">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="emailNotifications" class="rounded text-blue-600 focus:ring-blue-500">
+                            <span class="ml-2 text-sm text-gray-700">Email notifications</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" id="attendanceAlerts" class="rounded text-blue-600 focus:ring-blue-500" checked>
+                            <span class="ml-2 text-sm text-gray-700">Attendance alerts</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" id="weeklyReports" class="rounded text-blue-600 focus:ring-blue-500" checked>
+                            <span class="ml-2 text-sm text-gray-700">Weekly reports</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Appearance -->
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <h4 class="text-lg font-medium text-gray-800 mb-3">Appearance</h4>
+                    <div class="space-y-2">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="darkMode" class="rounded text-blue-600 focus:ring-blue-500">
+                            <span class="ml-2 text-sm text-gray-700">Dark mode</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Records Modal (hidden by default) -->
+    <div id="recordsModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-4xl max-h-[80vh] overflow-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800">Attendance Records</h3>
+                <button id="closeRecordsModal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Filter by Date</label>
+                <input type="date" id="recordsDateFilter" class="border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student ID</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recordsTableBody" class="bg-white divide-y divide-gray-200">
+                        <!-- Records will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification (hidden by default) -->
+    <div id="toast" class="fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-10 opacity-0 transition-all duration-300 flex items-center">
+        <i class="fas fa-check-circle mr-2"></i>
+        <span id="toastMessage">Attendance saved successfully!</span>
+    </div>
+
+    <script>
+        // Initialize database if not exists
+        if (!localStorage.getItem('attendanceDB')) {
+            const initialDB = {
+                teachers: [
+                    { id: 1, email: 'admin', password: 'admin', name: 'Administrator' },
+                    { id: 2, email: 'teacher@school.com', password: 'password123', name: 'John Smith' }
+                ],
+                classes: [
+                    { id: 1, name: 'Mathematics 101', teacherId: 1 }
+                ],
+                students: [
+                    { id: 1, studentId: 'S1001', name: 'Alice Johnson', classId: 1 },
+                    { id: 2, studentId: 'S1002', name: 'Bob Williams', classId: 1 },
+                    { id: 3, studentId: 'S1003', name: 'Charlie Brown', classId: 1 },
+                    { id: 4, studentId: 'S1004', name: 'Diana Miller', classId: 1 },
+                    { id: 5, studentId: 'S1005', name: 'Ethan Davis', classId: 1 }
+                ],
+                attendance: []
+            };
+            localStorage.setItem('attendanceDB', JSON.stringify(initialDB));
+        }
+        
+        // DOM Elements
+        const manageStudentsTab = document.getElementById('manageStudentsTab');
+        const manageStudentsModal = document.getElementById('manageStudentsModal');
+        const closeManageStudentsModal = document.getElementById('closeManageStudentsModal');
+        const studentsTableBody = document.getElementById('studentsTableBody');
+        const addStudentButton = document.getElementById('addStudentButton');
+        const studentFormModal = document.getElementById('studentFormModal');
+        const studentFormTitle = document.getElementById('studentFormTitle');
+        const closeStudentFormModal = document.getElementById('closeStudentFormModal');
+        const cancelStudentForm = document.getElementById('cancelStudentForm');
+        const studentForm = document.getElementById('studentForm');
+        const studentIdInput = document.getElementById('studentId');
+        const studentStudentIdInput = document.getElementById('studentStudentId');
+        const studentNameInput = document.getElementById('studentName');
+        const settingsTab = document.getElementById('settingsTab');
+        const settingsModal = document.getElementById('settingsModal');
+        const closeSettingsModal = document.getElementById('closeSettingsModal');
+        const passwordForm = document.getElementById('passwordForm');
+        const teacherName = document.getElementById('teacherName');
+        const teacherEmail = document.getElementById('teacherEmail');
+        const className = document.getElementById('className');
+        const classCode = document.getElementById('classCode');
+        const emailNotifications = document.getElementById('emailNotifications');
+        const attendanceAlerts = document.getElementById('attendanceAlerts');
+        const weeklyReports = document.getElementById('weeklyReports');
+        const darkMode = document.getElementById('darkMode');
+        const recordsTab = document.getElementById('recordsTab');
+        const recordsModal = document.getElementById('recordsModal');
+        const closeRecordsModal = document.getElementById('closeRecordsModal');
+        const recordsTableBody = document.getElementById('recordsTableBody');
+        const recordsDateFilter = document.getElementById('recordsDateFilter');
+        const loginScreen = document.getElementById('loginScreen');
+        const appContainer = document.getElementById('appContainer');
+        const loginForm = document.getElementById('loginForm');
+        const logoutButton = document.getElementById('logoutButton');
+        const menuButton = document.getElementById('menuButton');
+        const sidebar = document.getElementById('sidebar');
+        const studentList = document.getElementById('studentList');
+        const saveAttendance = document.getElementById('saveAttendance');
+        const attendanceDate = document.getElementById('attendanceDate');
+        const presentCount = document.getElementById('presentCount');
+        const absentCount = document.getElementById('absentCount');
+        const lateCount = document.getElementById('lateCount');
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toastMessage');
+        
+        // Manage Students tab click handler
+        manageStudentsTab.addEventListener('click', () => {
+            manageStudentsModal.classList.remove('hidden');
+            loadStudentsList();
+        });
+
+        // Close manage students modal handler
+        closeManageStudentsModal.addEventListener('click', () => {
+            manageStudentsModal.classList.add('hidden');
+        });
+
+        // Add new student button handler
+        addStudentButton.addEventListener('click', () => {
+            studentFormTitle.textContent = 'Add New Student';
+            studentIdInput.value = '';
+            studentForm.reset();
+            studentFormModal.classList.remove('hidden');
+        });
+
+        // Close student form modal handler
+        closeStudentFormModal.addEventListener('click', () => {
+            studentFormModal.classList.add('hidden');
+        });
+
+        cancelStudentForm.addEventListener('click', () => {
+            studentFormModal.classList.add('hidden');
+        });
+
+        // Student form submit handler
+        studentForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            saveStudent();
+        });
+
+        // Settings tab click handler
+        settingsTab.addEventListener('click', () => {
+            settingsModal.classList.remove('hidden');
+            loadSettings();
+        });
+
+        // Close settings modal handler
+        closeSettingsModal.addEventListener('click', () => {
+            settingsModal.classList.add('hidden');
+        });
+
+        // Password form submit handler
+        passwordForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            changePassword();
+        });
+
+        // Class name change handler
+        className.addEventListener('change', () => {
+            updateClassName();
+        });
+
+        // Notification preferences change handlers
+        emailNotifications.addEventListener('change', saveNotificationPreferences);
+        attendanceAlerts.addEventListener('change', saveNotificationPreferences);
+        weeklyReports.addEventListener('change', saveNotificationPreferences);
+        darkMode.addEventListener('change', toggleDarkMode);
+
+        // Records tab click handler
+        recordsTab.addEventListener('click', () => {
+            recordsModal.classList.remove('hidden');
+            loadAttendanceRecords();
+        });
+
+        // Close modal handler
+        closeRecordsModal.addEventListener('click', () => {
+            recordsModal.classList.add('hidden');
+        });
+
+        // Date filter change handler
+        recordsDateFilter.addEventListener('change', () => {
+            loadAttendanceRecords();
+        });
+
+        // Set today's date as default
+        const today = new Date();
+        attendanceDate.value = today.toISOString().split('T')[0];
+        
+        // Toggle sidebar on mobile
+        menuButton.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+        });
+        
+        // Login functionality
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            // Get database
+            const db = JSON.parse(localStorage.getItem('attendanceDB'));
+            
+            // Find teacher
+            const teacher = db.teachers.find(t => t.email === email && t.password === password);
+            
+            if (teacher) {
+                // Successful login
+                loginScreen.classList.add('hidden');
+                appContainer.classList.remove('hidden');
+                
+                // Load students for the teacher's class
+                loadStudents(teacher.id);
+            } else {
+                alert('Invalid email or password');
+            }
+        });
+        
+        // Logout functionality
+        logoutButton.addEventListener('click', () => {
+            appContainer.classList.add('hidden');
+            loginScreen.classList.remove('hidden');
+            loginForm.reset();
+        });
+        
+        // Load students for the teacher's class
+        function loadStudents(teacherId) {
+            const db = JSON.parse(localStorage.getItem('attendanceDB'));
+            
+            // Find the teacher's class (assuming one teacher has one class for simplicity)
+            const teacherClass = db.classes.find(c => c.teacherId === teacherId);
+            
+            if (teacherClass) {
+                // Get students in this class
+                const students = db.students.filter(s => s.classId === teacherClass.id);
+                
+                // Clear previous students
+                studentList.innerHTML = '';
+                
+                // Add students to the table
+                students.forEach(student => {
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-gray-50';
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${student.studentId}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${student.name}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <select class="status-select border border-gray-300 rounded px-3 py-1 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" data-student-id="${student.id}">
+                                <option value="present">Present</option>
+                                <option value="absent">Absent</option>
+                                <option value="late">Late</option>
+                            </select>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <input type="text" class="notes-input border border-gray-300 rounded px-3 py-1 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full max-w-xs" data-student-id="${student.id}" placeholder="Optional notes">
+                        </td>
+                    `;
+                    studentList.appendChild(row);
+                });
+                
+                // Load any existing attendance for today
+                loadTodayAttendance(teacherClass.id);
+                
+                // Add event listeners to status selects to update counts
+                document.querySelectorAll('.status-select').forEach(select => {
+                    select.addEventListener('change', updateAttendanceCounts);
+                });
+                
+                // Initialize counts
+                updateAttendanceCounts();
+            }
+        }
+        
+        // Load today's attendance if it exists
+        function loadTodayAttendance(classId) {
+            const db = JSON.parse(localStorage.getItem('attendanceDB'));
+            const today = attendanceDate.value;
+            
+            const todayAttendance = db.attendance.filter(a => 
+                a.date === today && a.classId === classId
+            );
+            
+            if (todayAttendance.length > 0) {
+                todayAttendance.forEach(record => {
+                    const select = document.querySelector(`.status-select[data-student-id="${record.studentId}"]`);
+                    const notesInput = document.querySelector(`.notes-input[data-student-id="${record.studentId}"]`);
+                    
+                    if (select) select.value = record.status;
+                    if (notesInput) notesInput.value = record.notes || '';
+                });
+            }
+        }
+        
+        // Update the attendance summary counts
+        function updateAttendanceCounts() {
+            let present = 0;
+            let absent = 0;
+            let late = 0;
+            
+            document.querySelectorAll('.status-select').forEach(select => {
+                if (select.value === 'present') present++;
+                else if (select.value === 'absent') absent++;
+                else if (select.value === 'late') late++;
+            });
+            
+            presentCount.textContent = present;
+            absentCount.textContent = absent;
+            lateCount.textContent = late;
+        }
+        
+        // Save attendance to database
+        saveAttendance.addEventListener('click', () => {
+            const db = JSON.parse(localStorage.getItem('attendanceDB'));
+            const date = attendanceDate.value;
+            
+            // Get teacher's class (assuming first class for simplicity)
+            const teacherId = 1; // In a real app, this would come from login
+            const teacherClass = db.classes.find(c => c.teacherId === teacherId);
+            
+            if (!teacherClass) return;
+            
+            // Remove any existing attendance for this date and class
+            db.attendance = db.attendance.filter(a => 
+                !(a.date === date && a.classId === teacherClass.id)
+            );
+            
+            // Add new attendance records
+            document.querySelectorAll('.status-select').forEach(select => {
+                const studentId = parseInt(select.dataset.studentId);
+                const status = select.value;
+                const notesInput = document.querySelector(`.notes-input[data-student-id="${studentId}"]`);
+                const notes = notesInput ? notesInput.value : '';
+                
+                db.attendance.push({
+                    id: Date.now(), // Simple unique ID
+                    date,
+                    classId: teacherClass.id,
+                    studentId,
+                    status,
+                    notes,
+                    recordedAt: new Date().toISOString()
+                });
+            });
+            
+            // Save back to localStorage
+            localStorage.setItem('attendanceDB', JSON.stringify(db));
+            
+            // Show success message
+            showToast('Attendance saved successfully!');
+        });
+        
+        // Show toast notification
+        function showToast(message) {
+            toastMessage.textContent = message;
+            toast.classList.remove('translate-y-10', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+            
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-10', 'opacity-0');
+            }, 3000);
+        }
+        
+        // Load attendance records
+        function loadAttendanceRecords() {
+            const db = JSON.parse(localStorage.getItem('attendanceDB'));
+            const dateFilter = recordsDateFilter.value;
+            
+            // Clear previous records
+            recordsTableBody.innerHTML = '';
+            
+            // Filter records by date if filter is set
+            let filteredRecords = db.attendance;
+            if (dateFilter) {
+                filteredRecords = filteredRecords.filter(record => record.date === dateFilter);
+            }
+            
+            // Sort by date (newest first)
+            filteredRecords.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            // Group by date for better display
+            const groupedRecords = {};
+            filteredRecords.forEach(record => {
+                if (!groupedRecords[record.date]) {
+                    groupedRecords[record.date] = [];
+                }
+                groupedRecords[record.date].push(record);
+            });
+            
+            // Add records to table
+            for (const date in groupedRecords) {
+                const dateRecords = groupedRecords[date];
+                
+                dateRecords.forEach((record, index) => {
+                    const student = db.students.find(s => s.id === record.studentId);
+                    if (!student) return;
+                    
+                    const row = document.createElement('tr');
+                    row.className = index === 0 ? 'border-t-2 border-gray-300' : '';
+                    row.innerHTML = `
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${index === 0 ? date : ''}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${student.studentId}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${student.name}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                ${record.status === 'present' ? 'bg-green-100 text-green-800' : 
+                                  record.status === 'absent' ? 'bg-yellow-100 text-yellow-800' : 
+                                  'bg-blue-100 text-blue-800'}">
+                                ${record.status.charAt(0).toUpperCase() + record.status.slice(1)}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${record.notes || '-'}</td>
+                    `;
+                    recordsTableBody.appendChild(row);
+                });
+            }
+            
+            if (recordsTableBody.innerHTML === '') {
+                recordsTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">No attendance records found</td>
+                    </tr>
+                `;
+            }
+        }
+
+        // When date changes, load attendance for that date
+        attendanceDate.addEventListener('change', () => {
+            const teacherId = 1; // In a real app, this would come from login
+            loadStudents(teacherId);
+        });
+
+        // Load students list for management
+        function loadStudentsList() {
+            const db = JSON.parse(localStorage.getItem('attendanceDB'));
+            const teacherId = 1; // In a real app, this would come from login
+            const teacherClass = db.classes.find(c => c.teacherId === teacherId);
+            
+            if (!teacherClass) return;
+            
+            const students = db.students.filter(s => s.classId === teacherClass.id);
+            
+            // Clear previous students
+            studentsTableBody.innerHTML = '';
+            
+            if (students.length === 0) {
+                studentsTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="px-6 py-4 text-center text-sm text-gray-500">No students found</td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Add students to the table
+            students.forEach(student => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${student.studentId}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${student.name}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <button class="edit-student mr-3 text-blue-600 hover:text-blue-800" data-id="${student.id}">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button class="delete-student text-red-600 hover:text-red-800" data-id="${student.id}">
+                            <i class="fas fa-trash-alt"></i> Delete
+                        </button>
+                    </td>
+                `;
+                studentsTableBody.appendChild(row);
+            });
+            
+            // Add event listeners to edit/delete buttons
+            document.querySelectorAll('.edit-student').forEach(button => {
+                button.addEventListener('click', () => editStudent(parseInt(button.dataset.id)));
+            });
+            
+            document.querySelectorAll('.delete-student').forEach(button => {
+                button.addEventListener('click', () => deleteStudent(parseInt(button.dataset.id)));
+            });
+        }
+        
+        // Edit student
+        function editStudent(id) {
+            const db = JSON.parse(localStorage.getItem('attendanceDB'));
+            const student = db.students.find(s => s.id === id);
+            
+            if (student) {
+                studentFormTitle.textContent = 'Edit Student';
+                studentIdInput.value = student.id;
+                studentStudentIdInput.value = student.studentId;
+                studentNameInput.value = student.name;
+                studentFormModal.classList.remove('hidden');
+            }
+        }
+        
+        // Delete student
+        function deleteStudent(id) {
+            if (!confirm('Are you sure you want to delete this student?')) return;
+            
+            const db = JSON.parse(localStorage.getItem('attendanceDB'));
+            
+            // Remove student
+            db.students = db.students.filter(s => s.id !== id);
+            
+            // Remove any attendance records for this student
+            db.attendance = db.attendance.filter(a => a.studentId !== id);
+            
+            localStorage.setItem('attendanceDB', JSON.stringify(db));
+            loadStudentsList();
+            showToast('Student deleted successfully');
+        }
+        
+        // Save student
+        function saveStudent() {
+            const db = JSON.parse(localStorage.getItem('attendanceDB'));
+            const id = parseInt(studentIdInput.value) || Date.now();
+            const studentId = studentStudentIdInput.value.trim();
+            const name = studentNameInput.value.trim();
+            const teacherId = 1; // In a real app, this would come from login
+            const teacherClass = db.classes.find(c => c.teacherId === teacherId);
+            
+            if (!teacherClass) return;
+            
+            // Check if student ID already exists (for new students)
+            if (!studentIdInput.value && db.students.some(s => s.studentId === studentId && s.classId === teacherClass.id)) {
+                alert('A student with this ID already exists in this class');
+                return;
+            }
+            
+            // Update or add student
+            const existingIndex = db.students.findIndex(s => s.id === id);
+            if (existingIndex >= 0) {
+                // Update existing student
+                db.students[existingIndex] = {
+                    ...db.students[existingIndex],
+                    studentId,
+                    name
+                };
+            } else {
+                // Add new student
+                db.students.push({
+                    id,
+                    studentId,
+                    name,
+                    classId: teacherClass.id
+                });
+            }
+            
+            localStorage.setItem('attendanceDB', JSON.stringify(db));
+            studentFormModal.classList.add('hidden');
+            loadStudentsList();
+            showToast('Student saved successfully');
+            
+            // If we're on the attendance page, refresh the student list
+            if (!appContainer.classList.contains('hidden')) {
+                loadStudents(teacherId);
+            }
+        }
+
+        // Load settings
+        function loadSettings() {
+            const db = JSON.parse(localStorage.getItem('attendanceDB'));
+            const teacherId = 1; // In a real app, this would come from login
+            const teacher = db.teachers.find(t => t.id === teacherId);
+            const teacherClass = db.classes.find(c => c.teacherId === teacherId);
+            
+            if (teacher) {
+                teacherName.textContent = teacher.name;
+                teacherEmail.textContent = teacher.email;
+            }
+            
+            if (teacherClass) {
+                className.value = teacherClass.name;
+                classCode.value = `CLS-${teacherClass.id.toString().padStart(4, '0')}`;
+            }
+            
+            // Load preferences
+            const preferences = JSON.parse(localStorage.getItem('teacherPreferences') || '{}');
+            emailNotifications.checked = preferences.emailNotifications !== false;
+            attendanceAlerts.checked = preferences.attendanceAlerts !== false;
+            weeklyReports.checked = preferences.weeklyReports !== false;
+            darkMode.checked = preferences.darkMode || false;
+        }
+
+        // Change password
+        function changePassword() {
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (newPassword !== confirmPassword) {
+                alert('New passwords do not match');
+                return;
+            }
+            
+            if (newPassword.length < 6) {
+                alert('New password must be at least 6 characters long');
+                return;
+            }
+            
+            const db = JSON.parse(localStorage.getItem('attendanceDB'));
+            const teacherId = 1; // In a real app, this would come from login
+            const teacher = db.teachers.find(t => t.id === teacherId);
+            
+            if (!teacher || teacher.password !== currentPassword) {
+                alert('Current password is incorrect');
+                return;
+            }
+            
+            teacher.password = newPassword;
+            localStorage.setItem('attendanceDB', JSON.stringify(db));
+            
+            passwordForm.reset();
+            showToast('Password updated successfully');
+        }
+
+        // Update class name
+        function updateClassName() {
+            const db = JSON.parse(localStorage.getItem('attendanceDB'));
+            const teacherId = 1; // In a real app, this would come from login
+            const teacherClass = db.classes.find(c => c.teacherId === teacherId);
+            
+            if (teacherClass) {
+                teacherClass.name = className.value;
+                localStorage.setItem('attendanceDB', JSON.stringify(db));
+                showToast('Class name updated');
+            }
+        }
+
+        // Save notification preferences
+        function saveNotificationPreferences() {
+            const preferences = {
+                emailNotifications: emailNotifications.checked,
+                attendanceAlerts: attendanceAlerts.checked,
+                weeklyReports: weeklyReports.checked,
+                darkMode: darkMode.checked
+            };
+            localStorage.setItem('teacherPreferences', JSON.stringify(preferences));
+        }
+
+        // Toggle dark mode
+        function toggleDarkMode() {
+            saveNotificationPreferences();
+            if (darkMode.checked) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        }
+
+        // Initialize dark mode if previously set
+        document.addEventListener('DOMContentLoaded', () => {
+            const preferences = JSON.parse(localStorage.getItem('teacherPreferences') || '{}');
+            if (preferences.darkMode) {
+                document.documentElement.classList.add('dark');
+                darkMode.checked = true;
+            }
+        });
+    </script>
+</body>
+</html>
+
